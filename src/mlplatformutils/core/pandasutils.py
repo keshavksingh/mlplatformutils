@@ -1,11 +1,4 @@
 import json
-from deltalake import DeltaTable
-from adlfs import AzureBlobFileSystem
-from azure.identity import ClientSecretCredential
-import pyarrow.fs
-import pyarrowfs_adlgen2
-import pandas as pd
-
 def get_max_properties_starting_with(id, prefix,LineageLogger):
 
     document=LineageLogger.query_graph("g.V().hasLabel('amlrun').has('id', '"+id+"')")
@@ -28,6 +21,10 @@ def read_from_delta_as_pandas(SOURCE_STORAGE_ACCOUNT_VALUE,\
                               RUN_ID,\
                               PIPELINE_STEP_NAME,\
                               LineageLogger):
+    
+    from deltalake import DeltaTable
+    from adlfs import AzureBlobFileSystem
+
     fs = AzureBlobFileSystem(
         account_name=SOURCE_STORAGE_ACCOUNT_VALUE,\
         client_id=SOURCE_READ_SPN_VALUE,\
@@ -51,6 +48,11 @@ def read_from_parquet_as_pandas(SOURCE_STORAGE_ACCOUNT_VALUE,\
                                 RUN_ID,\
                                 PIPELINE_STEP_NAME,\
                                 LineageLogger):
+    
+    from azure.identity import ClientSecretCredential
+    import pyarrow.fs
+    import pyarrowfs_adlgen2
+    import pandas as pd
 
     credential = ClientSecretCredential(
     tenant_id=tenant_id,

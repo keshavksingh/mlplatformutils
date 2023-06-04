@@ -78,3 +78,12 @@ def install_pip(package_name):
         except subprocess.CalledProcessError:
             print(f"Failed to install {pkg}.")
     return
+
+def upgrade_pip(package_name):
+    for pkg in package_name:
+        try:
+            subprocess.check_call(["pip", "install","--upgrade", pkg])
+            print(f"Successfully upgraded and installed {pkg}!")
+        except subprocess.CalledProcessError:
+            print(f"Failed to install {pkg}.")
+    return
