@@ -159,3 +159,26 @@ class LineageGraph:
         except Exception as e:
             traceback.print_exc()
             raise ValueError("Failed to QUERY Cosmos Gremlin graph!")
+        
+    def update_lineage_graph(self,run_id,pipeline_step_name,properties):
+        try:
+            query = "g.V().hasLabel('amlrun').has('RUN_ID', '"+run_id+"').has('PIPELINE_STEP_NAME', '"+pipeline_step_name+"').values('id')"
+            documentId = self.query_graph(query)[0]
+            self.update_vertex(documentId,properties)
+            return
+        except Exception as e:
+            traceback.print_exc()
+            raise ValueError("Failed to Update lineage graph!")
+        
+    def connect_lineage_graph(self,run_id,source_pipeline_step_name,dest_pipeline_step_name):
+        try:
+            src_query = "g.V().hasLabel('amlrun').has('RUN_ID', '"+run_id+"').has('PIPELINE_STEP_NAME', '"+source_pipeline_step_name+"').values('id')"
+            source_doc_id = self.query_graph(src_query)[0]
+            dest_query = "g.V().hasLabel('amlrun').has('RUN_ID', '"+run_id+"').has('PIPELINE_STEP_NAME', '"+dest_pipeline_step_name+"').values('id')"
+            dest_doc_id = self.query_graph(dest_query)[0]
+            self.insert_edges(source_doc_id, dest_doc_id,"DependendsOn", None)
+            return
+        except Exception as e:
+            traceback.print_exc()
+            raise ValueError("Failed to connect lineage graph!")
+        
