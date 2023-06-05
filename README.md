@@ -35,12 +35,17 @@
 ## Instructions
 
 <br />
- install twine - twine is a utility package that is used for publishing Python packages on PyPI
- python -m pip install twine 
- Build Package - create the source distribution of the package
- python setup.py sdist 
- Upload Package to PyPI
- python -m twine upload dist/*
+ install twine - twine is a utility package that is used for publishing Python packages on PyPI <br />
+ 
+ **python -m pip install twine** <br />
+ 
+ Build Package - create the source distribution of the package <br />
+ 
+ **python setup.py sdist** <br />
+ 
+ Upload Package to PyPI <br />
+
+ ***python -m twine upload dist/* *** <br />
 
 ## Description
 
@@ -69,3 +74,15 @@
 
 * read_from_delta_as_pandas
 * read_from_parquet_as_pandas
+
+### Examples
+
+<br />
+
+from mlplatformutils.core.platformutils import is_package_installed <br />
+print(is_package_installed("pandas")) <br />
+from mlplatformutils.core.app_insights_logger import telemetrylogger <br />
+from mlplatformutils.core.lineagegraph import LineageGraph <br />
+from mlplatformutils.core.sparkutils import write_to_adls_gen2, read_from_adls_gen2 <br />
+import mlplatformutils.core.platformutils as mlpu <br />
+mlpu.__version__ <br />

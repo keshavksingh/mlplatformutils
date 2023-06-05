@@ -1,5 +1,3 @@
-
-
 MLPlatformUtils Project
 ===============
 This project is used to package all the observability utils for lineage, dependency, telemetry and data read/writes.

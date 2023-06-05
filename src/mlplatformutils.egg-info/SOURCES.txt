@@ -13,3 +13,4 @@ src/mlplatformutils/core/lineagegraph.py
 src/mlplatformutils/core/pandasutils.py
 src/mlplatformutils/core/platformutils.py
 src/mlplatformutils/core/sparkutils.py
+src/mlplatformutils/core/version.py
