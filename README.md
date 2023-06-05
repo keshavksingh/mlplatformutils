@@ -1,7 +1,8 @@
 # mlplatformutils
 
 <br />
- mlplatformutils for observability
+
+ **mlplatformutils for observability**
 
 ## Structure
 
@@ -51,10 +52,13 @@
 
 <br />
 
-**app_insights_logger** - Constains **telemetrylogger** Class with Functions to Manage and Log Telemetry into Azure Application Insights
-**lineagegraph** - Contains **LineageGraph** Class with functions to manage Graph on Azure Cosmos DB enabled with Gremlin
+**app_insights_logger** - Contains **telemetrylogger** Class with Functions to Manage and Log Telemetry into Azure Application Insights <br />
 
-**platformutils** - Contains platform utility functions to check, install depedencies, check Azure ML Compute
+<br />
+
+**lineagegraph** - Contains **LineageGraph** Class with functions to manage Graph on Azure Cosmos DB enabled with Gremlin <br />
+
+**platformutils** - Contains platform utility functions to check, install depedencies, check Azure ML Compute 
 
 * is_package_installed
 * install_pip
@@ -79,10 +83,10 @@
 
 <br />
 
-from mlplatformutils.core.platformutils import is_package_installed <br />
-print(is_package_installed("pandas")) <br />
-from mlplatformutils.core.app_insights_logger import telemetrylogger <br />
-from mlplatformutils.core.lineagegraph import LineageGraph <br />
-from mlplatformutils.core.sparkutils import write_to_adls_gen2, read_from_adls_gen2 <br />
-import mlplatformutils.core.platformutils as mlpu <br />
+**from mlplatformutils.core.platformutils import is_package_installed** <br />
+**print(is_package_installed("pandas"))** <br />
+**from mlplatformutils.core.app_insights_logger import telemetrylogger** <br />
+**from mlplatformutils.core.lineagegraph import LineageGraph** <br />
+**from mlplatformutils.core.sparkutils import write_to_adls_gen2, read_from_adls_gen2** <br />
+**import mlplatformutils.core.platformutils as mlpu** <br />
 mlpu.__version__ <br />
