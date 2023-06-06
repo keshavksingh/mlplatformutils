@@ -70,3 +70,50 @@ def read_from_parquet_as_pandas(SOURCE_STORAGE_ACCOUNT_VALUE,\
                                              "DataReadSourceColumns_"+sourcePostfix:"["+",".join(pandas_df.columns.tolist())+"]"})
 
     return pandas_df
+
+
+def write_pandas_as_parquet_to_adlsgen2(SOURCE_STORAGE_ACCOUNT_VALUE,\
+                                SOURCE_READ_SPN_VALUE,\
+                                SOURCE_READ_SPNKEY_VALUE,\
+                                tenant_id,\
+                                AML_STORAGE_EXPERIMENT_PARQUET_ROOT_PATH,\
+                                pandas_df,\
+                                RUN_ID,\
+                                PIPELINE_STEP_NAME,\
+                                LineageLogger):
+    
+    AML_STORAGE_EXPERIMENT_PARQUET_ROOT_PATH = "<your_container>/<directory>/<file_name>.parquet"
+    from azure.identity import ClientSecretCredential
+    import pyarrow.fs
+    import pyarrow as pa
+    import pyarrow.parquet
+    import pyarrowfs_adlgen2
+    import pyarrow.dataset
+
+    credential = ClientSecretCredential(
+    tenant_id=tenant_id,
+    client_id=SOURCE_READ_SPN_VALUE,
+    client_secret=SOURCE_READ_SPNKEY_VALUE)
+
+    handler=pyarrowfs_adlgen2.AccountHandler.from_account_name(SOURCE_STORAGE_ACCOUNT_VALUE,credential=credential)
+    fs = pyarrow.fs.PyFileSystem(handler)
+    pyarrow_table = pa.Table.from_pandas(pandas_df)
+    
+    with fs.open_output_stream(AML_STORAGE_EXPERIMENT_PARQUET_ROOT_PATH) as out:
+        pyarrow.parquet.write_table(pyarrow_table, out)
+
+    """
+    pyarrow.dataset.write_dataset(
+        pyarrow_table,
+        AML_STORAGE_EXPERIMENT_PARQUET_ROOT_PATH,
+        format='parquet',
+        filesystem=pyarrow.fs.PyFileSystem(handler)
+    )
+    """
+    documentId = LineageLogger.query_graph("g.V().hasLabel('amlrun').has('RUN_ID', '"+RUN_ID+"').has('PIPELINE_STEP_NAME', '"+PIPELINE_STEP_NAME+"').values('id')")[0]
+    sourcePostfix=get_max_properties_starting_with(documentId,"DataWriteColumns",LineageLogger)
+    LineageLogger.update_vertex(documentId, {"DataWriteTarget_"+sourcePostfix: str(AML_STORAGE_EXPERIMENT_PARQUET_ROOT_PATH),\
+                                             "FileFormat_"+sourcePostfix:str("parquet"),\
+                                             "DataWriteColumns_"+sourcePostfix:"["+",".join(pandas_df.columns.tolist())+"]"})
+    print("File Write Successful at "+AML_STORAGE_EXPERIMENT_PARQUET_ROOT_PATH+" !")
+    return
