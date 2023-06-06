@@ -43,6 +43,8 @@ def write_to_adls_gen2(SOURCE_STORAGE_ACCOUNT_VALUE,\
                        file_path,\
                        file_format,\
                        repartition,\
+                       partitionColumn,\
+                       dynamicPartitionOverwriteMode,\
                        df,\
                        SOURCE_WRITE_SPN_VALUE,\
                        SOURCE_WRITE_SPNKEY_VALUE,\
@@ -62,10 +64,21 @@ def write_to_adls_gen2(SOURCE_STORAGE_ACCOUNT_VALUE,\
     LineageLogger.update_vertex(documentId, {"DataWriteTarget_"+targetPostfix: str(file_path),\
                                         "FileFormat_"+targetPostfix:file_format,\
                                         "DataWriteColumns_"+targetPostfix:"["+",".join(df.columns)+"]"})
+    
+    if dynamicPartitionOverwriteMode:
+        spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
+    
     if repartition is None:
-        df.write.format(file_format).mode('overwrite').save(file_path)
+        if partitionColumn:
+            #partitionColumn accepted as list of columns
+            df.write.format(file_format).partitionBy(partitionColumn).mode("overwrite").save(file_path)
+        else: 
+            df.write.format(file_format).mode('overwrite').save(file_path)
     else:
-        df.repartition(repartition).write.format(file_format).mode('overwrite').save(file_path)
+        if partitionColumn:
+            df.repartition(repartition).write.format(file_format).partitionBy(partitionColumn).mode("overwrite").save(file_path)
+        else:
+            df.repartition(repartition).write.format(file_format).mode('overwrite').save(file_path)
     return
 
 def read_from_kusto(kustoOptions,RUN_ID,PIPELINE_STEP_NAME,LineageLogger):
