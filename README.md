@@ -78,6 +78,7 @@
 
 * read_from_delta_as_pandas
 * read_from_parquet_as_pandas
+* write_pandas_as_parquet_to_adlsgen2
 
 ### Examples
 

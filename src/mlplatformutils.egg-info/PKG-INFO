@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: mlplatformutils
-Version: 0.8.7
+Version: 0.8.8
 Author: Keshav Singh
 Author-email: keshav_singh@hotmail.com
 License: MIT
@@ -88,6 +88,7 @@ Description-Content-Type: text/markdown
 
 * read_from_delta_as_pandas
 * read_from_parquet_as_pandas
+* write_pandas_as_parquet_to_adlsgen2
 
 ### Examples
 
