@@ -147,7 +147,7 @@ def write_pandas_as_parquet_file_to_adlsgen2(SOURCE_STORAGE_ACCOUNT_VALUE,\
                                 PIPELINE_STEP_NAME,\
                                 LineageLogger):
     
-    AML_STORAGE_EXPERIMENT_PARQUET_ROOT_PATH = "<your_container>/<directory>/<file_name>.parquet"
+    #AML_STORAGE_EXPERIMENT_PARQUET_ROOT_PATH = "<your_container>/<directory>/<file_name>.parquet"
     from azure.identity import ClientSecretCredential
     import pyarrow.fs
     import pyarrow as pa
