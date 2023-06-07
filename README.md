@@ -77,8 +77,9 @@
 **pandasutils** - Contains functions to read data from Azure Data Lake Gen2 (from Delta Format or Parquet Format) into Pandas Dataframe without Spark while ensuring integrated Lineage Graph Logging.
 
 * read_from_delta_as_pandas
-* read_from_parquet_as_pandas
-* write_pandas_as_parquet_to_adlsgen2
+* read_parquet_file_from_adlsgen2_as_pandas
+* read_parquet_directory_from_adlsgen2_as_pandas
+* write_pandas_as_parquet_file_to_adlsgen2
 
 ### Examples
 
@@ -91,3 +92,12 @@
 **from mlplatformutils.core.sparkutils import write_to_adls_gen2, read_from_adls_gen2** <br />
 **import mlplatformutils.core.platformutils as mlpu** <br />
 mlpu.__version__ <br />
+
+### Notes
+
+<br />
+
+When Running this Lineage Package from Jupyter Nootebook, the below 3 Lines Help overcome JupyterNotebook **RuntimeError: Cannot run the event loop while another loop is running** <br />
+**import asyncio** <br />
+**import nest_asyncio** <br />
+**nest_asyncio.apply()** <br />

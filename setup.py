@@ -12,7 +12,7 @@ setup(
     name='mlplatformutils',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    version='0.8.8',
+    version='0.9.1',
     license='MIT',
     classifiers=[
         'Programming Language :: Python :: 3.8'
@@ -23,7 +23,7 @@ setup(
     package_dir={'': 'src'},
     keywords='mlplatformutils',
     install_requires=[
-          'applicationinsights','gremlinpython','azureml-core'
+          'applicationinsights','gremlinpython','azureml-core','azure-identity','azure-storage-file-datalake'
       ],
 
 )

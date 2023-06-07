@@ -4,6 +4,14 @@ import sys
 import traceback
 import asyncio
 
+"""
+When Running this Lineage Package from Jupyter Nootebook - 
+The below 3 Lines Help over come JupyterNotebook RuntimeError: Cannot run the event loop while another loop is running
+import asyncio
+import nest_asyncio
+nest_asyncio.apply()
+"""
+
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
