@@ -36,12 +36,10 @@ def read_from_adls_gen2(SOURCE_STORAGE_ACCOUNT_VALUE,\
     sourcePostfix,dataprop=get_max_properties_starting_with(documentId,"DataReadSourceColumns","DataReadSource",LineageLogger)
     if dataprop is None:
         dataprop = str({"DataReadSource_"+sourcePostfix: file_path,\
-                                    "Type":"ADLS",\
-                                    "DataReadSourceColumns_"+sourcePostfix:"["+",".join(df.columns)+"]"})
+                                    "Type":"ADLS"})
     else:
         dataprop = str(dataprop)+str(",")+str({"DataReadSource_"+sourcePostfix: file_path,\
-                                    "Type":"ADLS",\
-                                    "DataReadSourceColumns_"+sourcePostfix:"["+",".join(df.columns)+"]"})
+                                    "Type":"ADLS"})
     dataprop = dataprop.replace("'",'"')
     LineageLogger.update_vertex(documentId, {"DataReadSource_"+sourcePostfix: str(file_path),\
                                              "FileFormat_"+sourcePostfix:str(file_format),\
@@ -90,12 +88,10 @@ def write_to_adls_gen2(SOURCE_STORAGE_ACCOUNT_VALUE,\
     targetPostfix,dataprop=get_max_properties_starting_with(documentId,"DataWriteColumns","DataWriteTarget",LineageLogger)  
     if dataprop is None:
         dataprop = str({"DataWriteTarget_"+targetPostfix: file_path,\
-                                    "Type":"ADLS",\
-                                    "DataWriteColumns_"+targetPostfix:"["+",".join(df.columns)+"]"})
+                                    "Type":"ADLS"})
     else:
         dataprop = str(dataprop)+str(",")+str({"DataWriteTarget_"+targetPostfix: file_path,\
-                                    "Type":"ADLS",\
-                                    "DataWriteColumns_"+targetPostfix:"["+",".join(df.columns)+"]"})
+                                    "Type":"ADLS"})
     dataprop = dataprop.replace("'",'"')
     LineageLogger.update_vertex(documentId, {"DataWriteTarget_"+targetPostfix: str(file_path),\
                                              "FileFormat_"+targetPostfix:str(file_format),\
@@ -121,12 +117,10 @@ def read_from_kusto(kustoOptions,RUN_ID,PIPELINE_STEP_NAME,LineageLogger):
     sourcePostfix,dataprop=get_max_properties_starting_with(documentId,"DataReadSourceColumns","DataReadSource",LineageLogger)
     if dataprop is None:
         dataprop = str({"DataReadSource_"+sourcePostfix: "ADX-Cluster "+str(kustoOptions["kustoCluster"])+" ADX-Database"+str(kustoOptions["kustoDatabase"])+ " ADX-Table "+str(kustoOptions["kustoTable"]),\
-                                    "Type":"ADX",\
-                                    "DataReadSourceColumns_"+sourcePostfix:"["+",".join(kustoDf.columns)+"]"})
+                                    "Type":"ADX"})
     else:
         dataprop = str(dataprop)+str(",")+str({"DataReadSource_"+sourcePostfix: "ADX-Cluster "+str(kustoOptions["kustoCluster"])+" ADX-Database"+str(kustoOptions["kustoDatabase"])+ " ADX-Table "+str(kustoOptions["kustoTable"]),\
-                                    "Type":"ADX",\
-                                    "DataReadSourceColumns_"+sourcePostfix:"["+",".join(kustoDf.columns)+"]"})
+                                    "Type":"ADX"})
     dataprop = dataprop.replace("'",'"')
     LineageLogger.update_vertex(documentId, {"KustoDataReadCluster_"+sourcePostfix: str(kustoOptions["kustoCluster"]),\
                                         "KustoDataReadDatabase_"+sourcePostfix: str(kustoOptions["kustoDatabase"]),\
@@ -151,12 +145,10 @@ def read_from_azsql(SQL_SERVER_INSTANCE,access_token,Query,RUN_ID,PIPELINE_STEP_
     sourcePostfix,dataprop=get_max_properties_starting_with(documentId,"DataReadSourceColumns","DataReadSource",LineageLogger)
     if dataprop is None:
         dataprop = str({"DataReadSource_"+sourcePostfix: "SQL SERVER INSTANCE "+str(SQL_SERVER_INSTANCE)+" SQL Query "+str(Query),\
-                                    "Type":"ADX",\
-                                    "DataReadSourceColumns_"+sourcePostfix:"["+",".join(df.columns)+"]"})
+                                    "Type":"AzureSQL"})
     else:
         dataprop = str(dataprop)+str(",")+str({"DataReadSource_"+sourcePostfix: "SQL SERVER INSTANCE "+str(SQL_SERVER_INSTANCE)+" SQL Query "+str(Query),\
-                                    "Type":"ADX",\
-                                    "DataReadSourceColumns_"+sourcePostfix:"["+",".join(df.columns)+"]"})
+                                    "Type":"AzureSQL"})
     dataprop = dataprop.replace("'",'"')
     LineageLogger.update_vertex(documentId, {"SqlDataReadServer_"+sourcePostfix: str(SQL_SERVER_INSTANCE),\
                                         "SqlDataReadQuery_"+sourcePostfix: str(Query),\
