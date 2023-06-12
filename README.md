@@ -76,6 +76,12 @@
 * read_parquet_directory_from_adlsgen2_as_pandas
 * write_pandas_as_parquet_file_to_adlsgen2
 
+**freshnessutils** - Contains functions to add freshness details into Azure Cosmos (NoSQL) document db. This helps with the details on the freshness metrics on evaluating the SLA, and downstream processing. It captures and provides details on model, training dataset freshness for the most recent and historical processing.
+
+* add_freshness
+* upsert_freshness
+* query_freshness
+
 ### Examples
 
 <br />
@@ -88,8 +94,9 @@
 **from mlplatformutils.core.pandasutils import write_pandas_as_parquet_file_to_adlsgen2, read_parquet_directory_from_adlsgen2_as_pandas** <br />
 **from mlplatformutils.core.sparkcoreutils import write_to_adls_gen2, read_from_adls_gen2** <br />
 **from mlplatformutils.core.pandascoreutils import write_pandas_as_parquet_file_to_adlsgen2, read_parquet_directory_from_adlsgen2_as_pandas** <br />
+**from mlplatformutils.core.freshnessutils import add_freshness, upsert_freshness, query_freshness** <br />
 **import mlplatformutils.core.version as vr** <br />
-**print(vr.__version__)** <br />
+**print(vr.\_\_version\_\_)** <br />
 
 ### Notes
 
@@ -120,18 +127,20 @@ When Running this Lineage Package from Jupyter Nootebook, the below 3 Lines Help
 |   |   |-- |-- pandascoreutils.py<br />
 |   |   |-- |-- pandasutils.py<br />
 |   |   |-- |-- lineagegraph.py<br />
+|   |   |-- |-- freshnessutils.py<br />
 |   |   |-- |-- app_insights_logger.py<br />
 |-- tests<br />
 |   |-- __init__.py<br />
 |   |-- core<br />
 |   |-- |--__init__.py<br />
-|   |-- |-- sparkcoreutils.py<br />
-|   |-- |-- sparkutils.py<br />
-|   |-- |-- platformutils.py<br />
-|   |-- |-- pandascoreutils.py<br />
-|   |-- |-- pandasutils.py<br />
-|   |-- |-- lineagegraph.py<br />
-|   |-- |-- app_insights_logger.py<br />
+|   |-- |-- test_sparkcoreutils.py<br />
+|   |-- |-- test_sparkutils.py<br />
+|   |-- |-- test_platformutils.py<br />
+|   |-- |-- test_pandascoreutils.py<br />
+|   |-- |-- test_pandasutils.py<br />
+|   |-- |-- test_lineagegraph.py<br />
+|   |-- |-- test_freshnessutils.py<br />
+|   |-- |-- test_app_insights_logger.py<br />
 <br />
 
 ## Instructions

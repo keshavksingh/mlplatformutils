@@ -9,6 +9,7 @@ src/mlplatformutils.egg-info/requires.txt
 src/mlplatformutils.egg-info/top_level.txt
 src/mlplatformutils/core/__init__.py
 src/mlplatformutils/core/app_insights_logger.py
+src/mlplatformutils/core/freshnessutils.py
 src/mlplatformutils/core/lineagegraph.py
 src/mlplatformutils/core/pandascoreutils.py
 src/mlplatformutils/core/pandasutils.py

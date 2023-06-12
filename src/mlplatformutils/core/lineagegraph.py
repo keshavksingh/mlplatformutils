@@ -45,24 +45,30 @@ class LineageGraph:
     def print_status_attributes(self,result):
         print("\tResponse status_attributes:\n\t{0}".format(result.status_attributes))
 
-    def add_vertex(self, label, properties):
+    def add_vertex(self, label, properties,run_id,pipeline_step_name):
         try:
-            if self.partition_key in properties.keys():
-                queryStr=""
-                queryStr = queryStr + "g.addV('" + label + "')"
-                for key, value in properties.items():
-                    queryStr = queryStr + ".property('" + key + "','" + str(value) + "')"
-                print(queryStr)
+            query = "g.V().hasLabel('amlrun').has('RUN_ID', '"+run_id+"').has('PIPELINE_STEP_NAME', '"+pipeline_step_name+"').values('id')"
+            documentId = self.query_graph(query)[0]
+            if documentId:
+                print("The Vertex Already Exists! Updating it..")
+                self.update_vertex(documentId,properties)
             else:
-                print("Unable To Add Vertex. Partition Key '"+ self.partition_key +"' Not Found! Failed to Add VERTEX to Cosmos Gremlin graph!")
-            callback = self.client.submitAsync(queryStr)
-            if callback.result() is not None:
-                print("\tInserted this vertex:\n\t{0}".format(callback.result().all().result()))
-            else:
-                print("Something went wrong with this query: {0}".format(queryStr))
-            print("\n")
-            self.print_status_attributes(callback.result())
-
+                print("Adding a new Vertex!")
+                if self.partition_key in properties.keys():
+                    queryStr=""
+                    queryStr = queryStr + "g.addV('" + label + "')"
+                    for key, value in properties.items():
+                        queryStr = queryStr + ".property('" + key + "','" + str(value) + "')"
+                    print(queryStr)
+                else:
+                    print("Unable To Add Vertex. Partition Key '"+ self.partition_key +"' Not Found! Failed to Add VERTEX to Cosmos Gremlin graph!")
+                callback = self.client.submitAsync(queryStr)
+                if callback.result() is not None:
+                    print("\tInserted this vertex:\n\t{0}".format(callback.result().all().result()))
+                else:
+                    print("Something went wrong with this query: {0}".format(queryStr))
+                print("\n")
+                self.print_status_attributes(callback.result())
         except Exception as e:
             traceback.print_exc()
             raise ValueError("Failed to add vertex to Cosmos Gremlin graph!")
@@ -117,6 +123,14 @@ class LineageGraph:
 
     def insert_edges(self,source_v_id,target_v_id,edge_label,properties):
         try:
+            exists_query = "g.V('" + source_v_id + "').outE('" + edge_label + "').where(inV().hasId('" + target_v_id + "')).hasNext()"
+            exists_callback = self.client.submitAsync(exists_query)
+            exists_result = exists_callback.result().one()
+        
+            if exists_result:
+                print("Edge already exists.")
+                return
+        
             queryStr=""
             queryStr = queryStr + "g.V('" + source_v_id + "')" + ".addE('" + edge_label + "')" + ".to(g.V('" + target_v_id + "'))"
             if properties is not None:
@@ -125,7 +139,7 @@ class LineageGraph:
             print(queryStr)
             callback = self.client.submitAsync(queryStr)
             if callback.result() is not None:
-                print("\tConnected the verteices with Edge:\n\t{0}".format(callback.result().all().result()))
+                print("\tConnected the Vertices with Edge:\n\t{0}".format(callback.result().all().result()))
             else:
                 print("Something went wrong with this query: {0}".format(queryStr))
             print("\n")
@@ -134,7 +148,7 @@ class LineageGraph:
         except Exception as e:
             traceback.print_exc()
             raise ValueError("Failed to add EDGE to Cosmos Gremlin graph!")
-
+        
     def drop_vertex(self,id):
         try:
             queryStr="g.V('id','"+id+"').drop()"
