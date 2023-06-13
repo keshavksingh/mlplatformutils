@@ -12,7 +12,7 @@ setup(
     name='mlplatformutils',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    version='0.9.5.10',
+    version='0.9.5.11',
     license='MIT',
     classifiers=[
         'Programming Language :: Python :: 3.8'

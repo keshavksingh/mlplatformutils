@@ -52,6 +52,7 @@ class LineageGraph:
             if documentIds:
                 documentId = documentIds[0]
                 print("The Vertex Already Exists! Updating it..")
+                properties.pop('EXPERIMENT_NAME')
                 self.update_vertex(documentId,properties)
             else:
                 print("Adding a new Vertex!")
