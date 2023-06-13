@@ -48,9 +48,10 @@ class LineageGraph:
     def add_vertex(self, label, properties,run_id,pipeline_step_name):
         try:
             query = "g.V().hasLabel('amlrun').has('RUN_ID', '"+run_id+"').has('PIPELINE_STEP_NAME', '"+pipeline_step_name+"').values('id')"
-            documentIds = self.query_graph(query)
-            if documentIds:
-                documentId = documentIds[0]
+            callback = self.client.submitAsync(query)
+            results = callback.result()
+            if results:
+                documentId = results[0]
                 print("The Vertex Already Exists! Updating it..")
                 self.update_vertex(documentId,properties)
             else:
@@ -124,14 +125,6 @@ class LineageGraph:
 
     def insert_edges(self,source_v_id,target_v_id,edge_label,properties):
         try:
-            exists_query = "g.V('" + source_v_id + "').outE('" + edge_label + "').where(inV().hasId('" + target_v_id + "')).hasNext()"
-            exists_callback = self.client.submitAsync(exists_query)
-            exists_result = exists_callback.result().one()
-        
-            if exists_result:
-                print("Edge already exists.")
-                return
-        
             queryStr=""
             queryStr = queryStr + "g.V('" + source_v_id + "')" + ".addE('" + edge_label + "')" + ".to(g.V('" + target_v_id + "'))"
             if properties is not None:
@@ -140,7 +133,7 @@ class LineageGraph:
             print(queryStr)
             callback = self.client.submitAsync(queryStr)
             if callback.result() is not None:
-                print("\tConnected the Vertices with Edge:\n\t{0}".format(callback.result().all().result()))
+                print("\tConnected the verteices with Edge:\n\t{0}".format(callback.result().all().result()))
             else:
                 print("Something went wrong with this query: {0}".format(queryStr))
             print("\n")
@@ -149,7 +142,7 @@ class LineageGraph:
         except Exception as e:
             traceback.print_exc()
             raise ValueError("Failed to add EDGE to Cosmos Gremlin graph!")
-        
+
     def drop_vertex(self,id):
         try:
             queryStr="g.V('id','"+id+"').drop()"
@@ -171,30 +164,23 @@ class LineageGraph:
         except Exception as e:
             traceback.print_exc()
             raise ValueError("Failed to DROP EDGE to Cosmos Gremlin graph!")
-
-    def query_graph(self, query):
+    
+    def query_graph(self,query):
         try:
             callback = self.client.submitAsync(query)
-            results = []
             for result in callback.result():
                 print(result)
-                results.append(result)
             self.print_status_attributes(callback.result())
-            return results
+            return result
         except Exception as e:
             traceback.print_exc()
             raise ValueError("Failed to QUERY Cosmos Gremlin graph!")
-
         
     def update_lineage_graph(self,run_id,pipeline_step_name,properties):
         try:
             query = "g.V().hasLabel('amlrun').has('RUN_ID', '"+run_id+"').has('PIPELINE_STEP_NAME', '"+pipeline_step_name+"').values('id')"
-            documentIds = self.query_graph(query)
-            if documentIds:
-                documentId = documentIds[0]
-                self.update_vertex(documentId,properties)
-            else:
-                print('Document Does not Exist!')
+            documentId = self.query_graph(query)[0]
+            self.update_vertex(documentId,properties)
             return
         except Exception as e:
             traceback.print_exc()
@@ -203,19 +189,9 @@ class LineageGraph:
     def connect_lineage_graph(self,run_id,source_pipeline_step_name,dest_pipeline_step_name):
         try:
             src_query = "g.V().hasLabel('amlrun').has('RUN_ID', '"+run_id+"').has('PIPELINE_STEP_NAME', '"+source_pipeline_step_name+"').values('id')"
-            source_doc_ids = self.query_graph(src_query)
-            if source_doc_ids:
-                source_doc_id = source_doc_ids[0]
-            else:
-                print('Source Document Id Does Not Exists!')
-
+            source_doc_id = self.query_graph(src_query)[0]
             dest_query = "g.V().hasLabel('amlrun').has('RUN_ID', '"+run_id+"').has('PIPELINE_STEP_NAME', '"+dest_pipeline_step_name+"').values('id')"
-            dest_doc_ids = self.query_graph(dest_query)
-            if dest_doc_ids:
-                dest_doc_id = dest_doc_ids[0]
-            else:
-                print('Destination DocumentId doest not Exits!')
-
+            dest_doc_id = self.query_graph(dest_query)[0]
             self.insert_edges(source_doc_id, dest_doc_id,"DependendsOn", None)
             return
         except Exception as e:
