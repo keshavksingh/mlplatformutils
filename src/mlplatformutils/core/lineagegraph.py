@@ -48,10 +48,9 @@ class LineageGraph:
     def add_vertex(self, label, properties,run_id,pipeline_step_name):
         try:
             query = "g.V().hasLabel('amlrun').has('RUN_ID', '"+run_id+"').has('PIPELINE_STEP_NAME', '"+pipeline_step_name+"').values('id')"
-            callback = self.client.submitAsync(query)
-            results = callback.result()
-            if results:
-                documentId = results[0]
+            documentIds = self.query_graph(query)
+            if documentIds:
+                documentId = documentIds[0]
                 print("The Vertex Already Exists! Updating it..")
                 self.update_vertex(documentId,properties)
             else:
@@ -167,6 +166,7 @@ class LineageGraph:
     
     def query_graph(self,query):
         try:
+            result = None
             callback = self.client.submitAsync(query)
             for result in callback.result():
                 print(result)
@@ -179,8 +179,13 @@ class LineageGraph:
     def update_lineage_graph(self,run_id,pipeline_step_name,properties):
         try:
             query = "g.V().hasLabel('amlrun').has('RUN_ID', '"+run_id+"').has('PIPELINE_STEP_NAME', '"+pipeline_step_name+"').values('id')"
-            documentId = self.query_graph(query)[0]
-            self.update_vertex(documentId,properties)
+            documentIds = self.query_graph(query)
+            if documentIds:
+                documentId = documentIds[0]
+                print("The Vertex Already Exists! Updating it..")            
+                self.update_vertex(documentId,properties)
+            else:
+                print("Document Not Found!")
             return
         except Exception as e:
             traceback.print_exc()
