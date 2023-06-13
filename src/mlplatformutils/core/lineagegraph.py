@@ -195,9 +195,17 @@ class LineageGraph:
     def connect_lineage_graph(self,run_id,source_pipeline_step_name,dest_pipeline_step_name):
         try:
             src_query = "g.V().hasLabel('amlrun').has('RUN_ID', '"+run_id+"').has('PIPELINE_STEP_NAME', '"+source_pipeline_step_name+"').values('id')"
-            source_doc_id = self.query_graph(src_query)[0]
+            source_doc_id = self.query_graph(src_query)
+            if not source_doc_id:
+                print("No source document ID found.")
+                return
+            source_doc_id = source_doc_id[0]
             dest_query = "g.V().hasLabel('amlrun').has('RUN_ID', '"+run_id+"').has('PIPELINE_STEP_NAME', '"+dest_pipeline_step_name+"').values('id')"
-            dest_doc_id = self.query_graph(dest_query)[0]
+            dest_doc_id = self.query_graph(dest_query)
+            if not dest_doc_id:
+                print("No Target document ID found.")
+                return
+            dest_doc_id = dest_doc_id[0]
             self.insert_edges(source_doc_id, dest_doc_id,"DependendsOn", None)
             return
         except Exception as e:
