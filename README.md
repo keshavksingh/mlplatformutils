@@ -53,14 +53,17 @@
 * read_from_adls_gen2
 * write_to_adls_gen2
 * read_from_kusto
+* synapseread_from_kusto
 * read_from_azsql
+* read_sstream_from_adls_gen1
 
-**sparkcoreutils** - Contains functions to read data from sources such as (Azure Data Lake Gen2, Azure Data Explorer (Kusto), Azure Sql Server) and write (Azure Data Lake Gen2) **without** integrated Lineage Graph Logging.
+**sparkcoreutils** - Contains functions to read data from sources such as (Azure Data Lake Gen2, Azure Data Explorer (Kusto), Azure Sql Server, Azure Data Lake Gen1 Structured Streams) and write (Azure Data Lake Gen2) **without** integrated Lineage Graph Logging.
 
 * read_from_adls_gen2
 * write_to_adls_gen2
 * read_from_kusto
 * read_from_azsql
+* read_sstream_from_adls_gen1
 
 **pandasutils** - Contains functions to read data from Azure Data Lake Gen2 (from Delta Format or Parquet Format) into Pandas Dataframe without Spark while ensuring integrated Lineage Graph Logging.
 
@@ -90,9 +93,9 @@
 **print(is_package_installed("pandas"))** <br />
 **from mlplatformutils.core.app_insights_logger import telemetrylogger** <br />
 **from mlplatformutils.core.lineagegraph import LineageGraph** <br />
-**from mlplatformutils.core.sparkutils import write_to_adls_gen2, read_from_adls_gen2** <br />
+**from mlplatformutils.core.sparkutils import write_to_adls_gen2, read_from_adls_gen2, read_sstream_from_adls_gen1** <br />
 **from mlplatformutils.core.pandasutils import write_pandas_as_parquet_file_to_adlsgen2, read_parquet_directory_from_adlsgen2_as_pandas** <br />
-**from mlplatformutils.core.sparkcoreutils import write_to_adls_gen2, read_from_adls_gen2** <br />
+**from mlplatformutils.core.sparkcoreutils import write_to_adls_gen2, read_from_adls_gen2, read_sstream_from_adls_gen1** <br />
 **from mlplatformutils.core.pandascoreutils import write_pandas_as_parquet_file_to_adlsgen2, read_parquet_directory_from_adlsgen2_as_pandas** <br />
 **from mlplatformutils.core.freshnessutils import add_freshness, upsert_freshness, query_freshness** <br />
 **import mlplatformutils.core.version as vr** <br />

@@ -67,6 +67,28 @@ def read_from_kusto(kustoOptions):
                   
     return kustoDf
 
+def synapseread_from_kusto(SynapseLinkedService,Query,kustoDatabase):
+
+    from pyspark.sql.session import SparkSession
+    pyKusto = SparkSession.builder.appName("kustoPySpark").getOrCreate()
+    sc = pyKusto.sparkContext
+    crp = sc._jvm.com.microsoft.azure.kusto.data.ClientRequestProperties()
+    crp.setOption("norequesttimeout",True)
+    crp.setOption("servertimeout", 100000 * 60)
+    crp.toString()
+
+    kustoDf  = pyKusto.read.\
+                format("com.microsoft.kusto.spark.synapse.datasource").\
+                option("spark.synapse.linkedService",SynapseLinkedService).\
+                option("kustoDatabase", kustoDatabase).\
+                option("kustoQuery", Query).\
+                option("authType","LS").\
+                option("clientRequestPropertiesJson", crp.toString()).\
+                option("readMode", 'ForceDistributedMode').\
+                load()
+               
+    return kustoDf
+
 def read_from_azsql(SQL_SERVER_INSTANCE,access_token,Query):
     from pyspark.sql.session import SparkSession
     pySql = SparkSession.builder.appName("AzSQLPySpark").getOrCreate()
@@ -79,4 +101,43 @@ def read_from_azsql(SQL_SERVER_INSTANCE,access_token,Query):
         .option("hostNameInCertificate", "*.database.windows.net") \
         .load()
     
+    return df
+
+
+def read_sstream_from_adls_gen1(AZURE_TENANT_ID,\
+                                file_path,\
+                                SOURCE_READ_SPN_VALUE,\
+                                SOURCE_READ_SPNKEY_VALUE):
+    import hashlib
+    from pyspark.sql.session import SparkSession
+    from pyspark.dbutils import DBUtils
+    spark = SparkSession.builder.appName("Read SSTREAM from ADLS Gen1").getOrCreate()
+    dbutils = DBUtils(spark)
+    
+    if '*' not in file_path:
+        toHash = file_path[:file_path.rfind('/')]
+        toAppend = file_path[file_path.rfind('/'):]
+    else:
+        toHash = file_path[:file_path.index('*')-1]
+        toAppend = file_path[file_path.index('*')-1:]
+
+    hash_object = hashlib.sha256(toHash.encode())
+    mountpoint = "/mnt/"+hash_object.hexdigest()
+
+    configs = {"fs.adl.oauth2.access.token.provider.type": "ClientCredential",
+    "fs.adl.oauth2.client.id": SOURCE_READ_SPN_VALUE,
+    "fs.adl.oauth2.credential": SOURCE_READ_SPNKEY_VALUE,
+    "fs.adl.oauth2.refresh.url": "https://login.microsoftonline.com/"+AZURE_TENANT_ID+"/oauth2/token"}
+
+    mountPoints = [mount.mountPoint for mount in dbutils.fs.mounts()]
+    if mountpoint not in mountPoints:
+        dbutils.fs.mount(source = toHash, mount_point = mountpoint, extra_configs = configs)
+        print('Data successfully mounted at:', mountpoint)
+    else:
+        dbutils.fs.unmount(mountpoint)
+        dbutils.fs.mount(source = toHash, mount_point = mountpoint, extra_configs = configs)
+        print('Data successfully mounted at:', mountpoint)
+        print("loading","dbfs:"+mountpoint+toAppend)
+    
+    df =spark.read.format("sstream").load("dbfs:"+mountpoint+toAppend)
     return df

@@ -129,6 +129,38 @@ def read_from_kusto(kustoOptions,RUN_ID,PIPELINE_STEP_NAME,LineageLogger):
                                         "DataReadSource":dataprop})            
     return kustoDf
 
+def synapseread_from_kusto(SynapseLinkedService,Query,kustoDatabase,RUN_ID,PIPELINE_STEP_NAME,LineageLogger):
+    from pyspark.sql.session import SparkSession
+    pyKusto = SparkSession.builder.appName("kustoPySpark").getOrCreate()
+    sc = pyKusto.sparkContext
+    crp = sc._jvm.com.microsoft.azure.kusto.data.ClientRequestProperties()
+    crp.setOption("norequesttimeout",True)
+    crp.setOption("servertimeout", 100000 * 60)
+    crp.toString()
+    kustoDf  = pyKusto.read.\
+                format("com.microsoft.kusto.spark.synapse.datasource").\
+                option("spark.synapse.linkedService",SynapseLinkedService).\
+                option("kustoDatabase", kustoDatabase).\
+                option("kustoQuery", Query).\
+                option("authType", "LS").\
+                option("clientRequestPropertiesJson", crp.toString()).\
+                option("readMode", 'ForceDistributedMode').\
+                load()
+    
+    documentId = LineageLogger.query_graph("g.V().hasLabel('amlrun').has('RUN_ID', '"+RUN_ID+"').has('PIPELINE_STEP_NAME', '"+PIPELINE_STEP_NAME+"').values('id')")[0]
+    sourcePostfix,dataprop=get_max_properties_starting_with(documentId,"DataReadSourceColumns","DataReadSource",LineageLogger)
+    if dataprop is None:
+        dataprop = str({"DataReadSource_"+sourcePostfix: " ADX-Database"+str(kustoDatabase),\
+                                    "Type":"ADX"})
+    else:
+        dataprop = str(dataprop)+str(",")+str({"DataReadSource_"+sourcePostfix: " ADX-Database"+str(kustoDatabase),\
+                                    "Type":"ADX"})
+    dataprop = dataprop.replace("'",'"')
+    LineageLogger.update_vertex(documentId, {"KustoDataReadDatabase_"+sourcePostfix: str(kustoDatabase),\
+                                        "DataReadSourceColumns_"+sourcePostfix:"["+",".join(kustoDf.columns)+"]",\
+                                        "DataReadSource":dataprop})                 
+    return kustoDf
+
 def read_from_azsql(SQL_SERVER_INSTANCE,access_token,Query,RUN_ID,PIPELINE_STEP_NAME,LineageLogger):
     from pyspark.sql.session import SparkSession
     pySql = SparkSession.builder.appName("AzSQLPySpark").getOrCreate()
@@ -154,4 +186,59 @@ def read_from_azsql(SQL_SERVER_INSTANCE,access_token,Query,RUN_ID,PIPELINE_STEP_
                                         "SqlDataReadQuery_"+sourcePostfix: str(Query),\
                                         "DataReadSourceColumns_"+sourcePostfix:"["+",".join(df.columns)+"]",\
                                         "DataReadSource":dataprop}) 
+    return df
+
+def read_sstream_from_adls_gen1(AZURE_TENANT_ID,\
+                                file_path,\
+                                SOURCE_READ_SPN_VALUE,\
+                                SOURCE_READ_SPNKEY_VALUE,\
+                                RUN_ID,\
+                                PIPELINE_STEP_NAME,\
+                                LineageLogger):
+    import hashlib
+    from pyspark.sql.session import SparkSession
+    from pyspark.dbutils import DBUtils
+    spark = SparkSession.builder.appName("Read SSTREAM from ADLS Gen1").getOrCreate()
+    dbutils = DBUtils(spark)
+    
+    if '*' not in file_path:
+        toHash = file_path[:file_path.rfind('/')]
+        toAppend = file_path[file_path.rfind('/'):]
+    else:
+        toHash = file_path[:file_path.index('*')-1]
+        toAppend = file_path[file_path.index('*')-1:]
+    hash_object = hashlib.sha256(toHash.encode())
+    mountpoint = "/mnt/"+hash_object.hexdigest()
+
+    configs = {"fs.adl.oauth2.access.token.provider.type": "ClientCredential",
+    "fs.adl.oauth2.client.id": SOURCE_READ_SPN_VALUE,
+    "fs.adl.oauth2.credential": SOURCE_READ_SPNKEY_VALUE,
+    "fs.adl.oauth2.refresh.url": "https://login.microsoftonline.com/"+AZURE_TENANT_ID+"/oauth2/token"}
+
+    mountPoints = [mount.mountPoint for mount in dbutils.fs.mounts()]
+    if mountpoint not in mountPoints:
+        dbutils.fs.mount(source = toHash, mount_point = mountpoint, extra_configs = configs)
+        print('Data successfully mounted at:', mountpoint)
+    else:
+        dbutils.fs.unmount(mountpoint)
+        dbutils.fs.mount(source = toHash, mount_point = mountpoint, extra_configs = configs)
+        print('Data successfully mounted at:', mountpoint)
+        print("loading","dbfs:"+mountpoint+toAppend)
+    
+    df =spark.read.format("sstream").load("dbfs:"+mountpoint+toAppend)
+
+    documentId = LineageLogger.query_graph("g.V().hasLabel('amlrun').has('RUN_ID', '"+RUN_ID+"').has('PIPELINE_STEP_NAME', '"+PIPELINE_STEP_NAME+"').values('id')")[0]
+    sourcePostfix,dataprop=get_max_properties_starting_with(documentId,"DataReadSourceColumns","DataReadSource",LineageLogger)
+    if dataprop is None:
+        dataprop = str({"DataReadSource_"+sourcePostfix: file_path,\
+                                    "Type":"ADLSGEN1"})
+    else:
+        dataprop = str(dataprop)+str(",")+str({"DataReadSource_"+sourcePostfix: file_path,\
+                                    "Type":"ADLSGEN1"})
+    dataprop = dataprop.replace("'",'"')
+    LineageLogger.update_vertex(documentId, {"DataReadSource_"+sourcePostfix: str(file_path),\
+                                             "FileFormat_"+sourcePostfix:str("sstream"),\
+                                             "DataReadSourceColumns_"+sourcePostfix:"["+",".join(df.columns)+"]",\
+                                             "DataReadSource":dataprop})
+
     return df
